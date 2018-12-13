@@ -1,0 +1,2 @@
+highestInput1=6324.72, highestInput2 =5052.15, smallestInput1 = 274.062, smallestInput2 = 677.306 
+highestOutput1 = 186.359, highestOutput2 = 5052.15, smallestOutput1 =114.47, smallestOutput2 = 677.306;
