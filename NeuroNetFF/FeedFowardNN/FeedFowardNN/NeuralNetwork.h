@@ -27,10 +27,9 @@ public:
 private:
 	NeuralNetworkConfig _config;
 	vector<Layer> m_Layers;
+	vector<DataRecord> m_Data;
 	vector<double> m_Max_Input;
 	vector<double> m_Min_Input;
-	
-
 	vector<double> m_Max_Output;
 	vector<double> m_Min_Output;
 	NeuralUtility neuralUtility;
@@ -38,8 +37,9 @@ private:
 	vector<double> FeedForward(const vector<double> &input);
 	void BackPropogation(const vector<double>  &eExpectedOutput);
 	void OutputResults(int epoch);
-	void RMSResults(int epoch, double trainingRSM, double validationRSM);
+	void RMSResults(int epoch, double trainingRSM, double validationRSM, double testRSM);
 	double ValidationRun();
+	double TestRun();
 	
 	
 };
@@ -77,11 +77,79 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkConfig &config)
 
 
 }
+
+double  NeuralNetwork::TestRun()
+{
+
+	double _error = 0;
+	vector<DataRecord> m_valData;
+	ifstream _File(_config.TestDataFileName);
+
+	if (_File.eof())
+	{
+		printf("Failed to load data file!");
+		exit;
+	}
+
+	string line;
+	while (!_File.eof() && getline(_File, line, '\n'))
+	{
+		stringstream myStream(line);
+		string cellData;
+		vector <double> data;
+		DataRecord rec;
+		while (getline(myStream, cellData, ','))
+		{
+			// cellData now has the value of a cell in your csv file.
+			data.push_back(stod(cellData));
+		}
+
+		rec.LeftInput = data[0];
+		rec.LeftOutput = data[1];
+		rec.RightInput = data[2];
+		rec.RightOutput = data[3];
+
+		m_valData.push_back(rec);
+
+		//close the file
+		_File.close();
+	}
+
+	for each(DataRecord dRec in m_valData)
+	{
+		vector<double> input;
+		input.push_back(dRec.LeftInput);
+		input.push_back(dRec.LeftOutput);
+
+		vector<double> output;
+		output.push_back(dRec.RightInput);
+		output.push_back(dRec.RightOutput);
+
+		vector<double> result = FeedForward(neuralUtility.Normalise(input, m_Max_Input, m_Min_Input));
+		//calculate error
+
+		Layer &lastLayer = m_Layers.back();
+
+		vector<double> normalisedOutput = neuralUtility.Normalise(output, m_Max_Output, m_Min_Output);
+
+		for (unsigned i = 0; i < lastLayer.size() - 1; ++i)
+		{
+			double deltaError = normalisedOutput[i] - lastLayer[i].GetOutputValue();
+			_error = deltaError * deltaError;
+		}
+
+		_error = sqrt(_error / (lastLayer.size() - 1)); //RMS Value
+
+	}
+
+	return _error;
+}
+
 double  NeuralNetwork::ValidationRun()
 {
 
 	double _error = 0;
-
+	vector<DataRecord> m_valData;
 	ifstream _File(_config.ValidationDataFileName);
 
 	if (_File.eof())
@@ -96,19 +164,33 @@ double  NeuralNetwork::ValidationRun()
 		stringstream myStream(line);
 		string cellData;
 		vector <double> data;
+		DataRecord rec;
 		while (getline(myStream, cellData, ','))
 		{
 			// cellData now has the value of a cell in your csv file.
 			data.push_back(stod(cellData));
 		}
 
+		rec.LeftInput = data[0];
+		rec.LeftOutput = data[1];
+		rec.RightInput = data[2];
+		rec.RightOutput = data[3];
+
+		m_valData.push_back(rec);
+
+		//close the file
+		_File.close();
+	}
+
+	for each(DataRecord dRec in m_valData)
+	{
 		vector<double> input;
-		input.push_back(data[0]);
-		input.push_back(data[1]);
+		input.push_back(dRec.LeftInput);
+		input.push_back(dRec.LeftOutput);
 
 		vector<double> output;
-		output.push_back(data[2]);
-		output.push_back(data[3]);
+		output.push_back(dRec.RightInput);
+		output.push_back(dRec.RightOutput);
 
 		vector<double> result = FeedForward(neuralUtility.Normalise(input, m_Max_Input, m_Min_Input));
 		//calculate error
@@ -127,45 +209,61 @@ double  NeuralNetwork::ValidationRun()
 		
 	}
 
-	//close the file
-	_File.close();
+	//random_shuffle(m_valData.begin(), m_valData.end());
 
 	return _error;
 }
 void NeuralNetwork::StartTraininig()
 {
 
-	
-	for(unsigned epoch =0;epoch <=_config.TotalEpoch;epoch++)
+	//load file
+	ifstream _File(_config.TrainingDataFileName);
+
+	if (_File.eof())
+	{
+		printf("Failed to load data file!");
+		exit;
+	}
+
+	string line;
+	while (!_File.eof() && getline(_File, line, '\n'))
+	{
+		stringstream myStream(line);
+		string cellData;
+		vector <double> data;
+		DataRecord rec;
+		while (getline(myStream, cellData, ','))
+		{
+			// cellData now has the value of a cell in your csv file.
+			data.push_back(stod(cellData));
+		}
+			rec.LeftInput = data[0];
+		rec.RightInput = data[1];
+		rec.LeftOutput = data[2];
+		rec.RightOutput = data[3];
+
+		m_Data.push_back(rec);
+
+		//close the file
+		_File.close();
+
+	}
+
+	unsigned epoch = 0;
+	double errorRMSValidation = 0;
+
+	for(epoch =0;epoch <_config.TotalEpoch -1 ;epoch++)
 	{ 
 	
-		ifstream _File (_config.TrainingDataFileName);
-		
-		if (_File.eof())
+		for each(DataRecord rec in m_Data)
 		{
-			printf("Failed to load data file!");
-			exit;
-		}
-		
-		string line;
-		while (!_File.eof() && getline(_File, line, '\n'))
-		{
-			stringstream myStream(line);
-			string cellData;
-			vector <double> data;
-			while (getline(myStream, cellData, ','))
-			{
-				// cellData now has the value of a cell in your csv file.
-				data.push_back(stod(cellData));
-			}
-
 			vector<double> input;
-			input.push_back(data[0]);
-			input.push_back(data[1]);
+			input.push_back(rec.LeftInput);
+			input.push_back(rec.RightInput);
 
 			vector<double> output;
-			output.push_back(data[2]);
-			output.push_back(data[3]);
+			output.push_back(rec.LeftOutput);
+			output.push_back(rec.RightOutput);
 
 			vector<double> result = FeedForward(neuralUtility.Normalise(input, m_Max_Input, m_Min_Input));
 			//calculate error & backpropogate
@@ -173,30 +271,45 @@ void NeuralNetwork::StartTraininig()
 			BackPropogation(neuralUtility.Normalise(output, m_Max_Output, m_Min_Output));
 			//to record the error
 
-			
-
 		}
 
-		//close the file
-		_File.close();
-
-		double errorRMS = ValidationRun();
+		//run the validation data
+		double errorRMSValidation = ValidationRun();
 
 		OutputResults(epoch);
 
-		RMSResults(epoch, m_error, errorRMS);
+		RMSResults(epoch, m_error, errorRMSValidation, 0);
 
-		//run the validation data
-
+		neuralUtility.SuffleArrayData(m_Data);
 		
-		//record weights and errors
-		//calculate mean error
-
-		//resuffle data
-		/*if (epoch % 50 == 0 )
-			neuralUtility.SuffleData(_config.TrainingDataFileName, _config.TempFileName);*/
 	}
 
+	//Last iteration
+	errorRMSValidation = ValidationRun();
+	double errorRMSTest = TestRun();
+	OutputResults(epoch);
+	RMSResults(epoch, m_error, errorRMSValidation, errorRMSTest);
+
+	for (unsigned i = 0; i < m_Layers.size() - 1; ++i)
+	{
+		Layer &layer = m_Layers[i];
+
+		cout << "Layer : " << i << endl;
+		cout << "Neurons " << layer.size() << endl;
+		
+		for (unsigned j = 0; j < layer.size(); ++j)
+		{
+			cout << "Neuron " << j << endl;
+			
+			vector <double> weights = layer[j].GetWeights();
+			
+
+			for (unsigned k = 0; k < weights.size(); ++k)
+			{
+				cout << weights[k] << "," << endl;
+			}
+		}
+	}
 }
 
 vector<double> NeuralNetwork::FeedForward(const vector<double> &input)
@@ -311,12 +424,12 @@ void NeuralNetwork::OutputResults(int epoch)
 	for (unsigned i = 0; i < m_Layers.size() - 1; ++i)
 	{
 		Layer &layer = m_Layers[i];
-		for (unsigned j = 0; j < m_Layers.size(); ++j)
+		/*for (unsigned j = 0; j < m_Layers.size(); ++j)
 		{
 			out << layer[j].GetOutputValue()<< ' ';
 		}
-		out << endl;
-		for (unsigned j = 0; j < m_Layers.size(); ++j)
+		out << endl;*/
+		for (unsigned j = 0; j < layer.size(); ++j)
 		{
 			vector <double> weights = layer[j].GetWeights();
 			for (unsigned k = 0; k < weights.size(); ++k)
@@ -326,7 +439,7 @@ void NeuralNetwork::OutputResults(int epoch)
 			out << endl;
 		}
 		
-		for (unsigned j = 0; j < m_Layers.size(); ++j)
+		/*for (unsigned j = 0; j < layer.size(); ++j)
 		{
 			vector <double> deltaWeights= layer[j].GetDeltaWeights();
 			for (unsigned k = 0; k < deltaWeights.size(); ++k)
@@ -334,21 +447,24 @@ void NeuralNetwork::OutputResults(int epoch)
 				out << deltaWeights[k] << ' ';
 			}
 			out << endl;
-		}
+		}*/
 	}
 
 	out.flush();
 	out.close();
 }
 
-void NeuralNetwork::RMSResults(int epoch, double trainingRSM, double validationRSM  )
+void NeuralNetwork::RMSResults(int epoch, double trainingRSM, double validationRSM , double testRSM )
 {
 	ofstream out(_config.RMSFileName, std::ofstream::app);
 
-	out << epoch << "," << trainingRSM  << "," << validationRSM << endl;
+	out << epoch << "," << trainingRSM  << "," << validationRSM << "," << testRSM << endl;
 
 	out.flush();
 	out.close();
+
+	cout.precision(17);
+	cout << trainingRSM << " ,  " << validationRSM << "," << testRSM << endl;
 }
 
 NeuralNetwork::~NeuralNetwork()

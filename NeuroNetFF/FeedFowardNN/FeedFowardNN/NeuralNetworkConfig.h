@@ -11,6 +11,7 @@ public:
 	char * WeightsFileName;
 	char * TrainingDataFileName;
 	string ValidationDataFileName;
+	string TestDataFileName;
 	char * TempFileName;
 	char * ResultFileName;
 	char * RMSFileName;

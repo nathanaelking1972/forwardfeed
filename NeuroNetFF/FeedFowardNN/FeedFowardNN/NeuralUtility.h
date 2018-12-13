@@ -19,6 +19,7 @@ public:
 	vector <double> DeNormalise(const vector <double> values, const vector<double> max, const vector<double> min);
 	vector <double> DeStringify(char * row);
 	void SuffleData(char *filename, char *tempFilename);
+	void SuffleArrayData(vector<DataRecord> &data);
 	vector<double> MaximumAndMinValue(char *fileName);
 	void FindAndReplace(string & data, string toSearch, string replaceStr);
 
@@ -29,6 +30,10 @@ private:
 	
 };
 
+void NeuralUtility::SuffleArrayData(vector<DataRecord> &data)
+{
+	random_shuffle(data.begin(), data.end());
+}
 vector <double> NeuralUtility::Normalise(const vector <double> values, const vector<double> max, const vector<double> min)
 {
 	vector <double> output;
@@ -64,8 +69,6 @@ vector <double> NeuralUtility::DeStringify(char * row)
 	}
 	return output;
 }
-
-
 
 void  NeuralUtility::SuffleData(char *filename, char *tempFilename)
 {

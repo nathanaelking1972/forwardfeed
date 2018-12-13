@@ -1,7 +1,8 @@
 ﻿  FeedFowardNN.cpp
-m:\ce889\program\neuronetff\feedfowardnn\feedfowardnn\neuralutility.h(138): warning C4551: function call missing argument list
-m:\ce889\program\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(90): warning C4551: function call missing argument list
-m:\ce889\program\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(147): warning C4551: function call missing argument list
+m:\ce889\program\neuronetff\feedfowardnn\feedfowardnn\neuralutility.h(141): warning C4551: function call missing argument list
+m:\ce889\program\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(91): warning C4551: function call missing argument list
+m:\ce889\program\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(158): warning C4551: function call missing argument list
+m:\ce889\program\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(225): warning C4551: function call missing argument list
 m:\ce889\program\neuronetff\feedfowardnn\feedfowardnn\feedfowardnn.cpp(82): warning C4101: 'neuralUtility': unreferenced local variable
   FeedFowardNN.vcxproj -> M:\CE889\Program\NeuroNetFF\FeedFowardNN\Debug\FeedFowardNN.exe
   FeedFowardNN.vcxproj -> M:\CE889\Program\NeuroNetFF\FeedFowardNN\Debug\FeedFowardNN.pdb (Full PDB)

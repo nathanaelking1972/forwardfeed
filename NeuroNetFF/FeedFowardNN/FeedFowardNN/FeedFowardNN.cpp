@@ -108,10 +108,11 @@ int main(int argc, char **argv)
 		config.ValidationDataFileName = "M:\\CE889\\Program\\Data\\Validation_data.csv";
 		config.ResultFileName = "M:\\CE889\\Program\\Results\\ResultFileName_exp.csv";
 		config.RMSFileName = "M:\\CE889\\Program\\Results\\RMSFileName_exp.csv";
+		config.TestDataFileName = "M:\\CE889\\Program\\Data\\test_data.csv";
 		config.TotalEpoch = 1000; 
-		config.Alpha = 0.005;
+		config.Alpha = 0.040;
 		config.Lambda = 1.0;
-		config.LearningRate = 0.03;
+		config.LearningRate = 0.20;
 		config.Topology.push_back(2); //input layer with two neurons
 		config.Topology.push_back(4); // hidden layer with 4 neurons
 		config.Topology.push_back(2); // output layer with 2 neurons
