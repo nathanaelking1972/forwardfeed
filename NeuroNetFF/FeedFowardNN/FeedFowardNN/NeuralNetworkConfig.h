@@ -12,6 +12,7 @@ public:
 	char * TrainingDataFileName;
 	string ValidationDataFileName;
 	string TestDataFileName;
+	char * InitialisationFile;
 	char * TempFileName;
 	char * ResultFileName;
 	char * RMSFileName;

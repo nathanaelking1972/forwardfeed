@@ -5,11 +5,13 @@
 #include "FileUtility.h"
 #include "NeuralUtility.h"
 #include "DataRecord.h"
+#include <iterator>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <assert.h>
+#include <conio.h>
 
 using namespace std;
 
@@ -40,6 +42,7 @@ private:
 	void RMSResults(int epoch, double trainingRSM, double validationRSM, double testRSM);
 	double ValidationRun();
 	double TestRun();
+	void Initialise();
 	
 	
 };
@@ -48,23 +51,10 @@ NeuralNetwork::NeuralNetwork(const NeuralNetworkConfig &config)
 {
 	//create number of layers of the network
 	_config = config;
-	unsigned noOfLayers = _config.Topology.size();
-	int size = _config.Topology.size();
 
-	for (unsigned i = 0 ; i < noOfLayers; ++i)
-	{
-		m_Layers.push_back(Layer());
-		unsigned noOfOutputs = (i == size - 1  ? 0 : _config.Topology[i + 1]);
+	Initialise();
 
-		//create neuron per layer including bias
-		for (unsigned j = 0; j <= _config.Topology[i]; ++j)
-		{
-			m_Layers.back().push_back(Neuron(noOfOutputs, j, config));
-			
-		}
-	}
 
-	
 	m_Max_Input.push_back(4598.22);
 	m_Max_Input.push_back(4989.31);
 	m_Min_Input.push_back(274.062);
@@ -276,7 +266,7 @@ void NeuralNetwork::StartTraininig()
 		//run the validation data
 		double errorRMSValidation = ValidationRun();
 
-		OutputResults(epoch);
+		//OutputResults(epoch);
 
 		RMSResults(epoch, m_error, errorRMSValidation, 0);
 
@@ -289,27 +279,8 @@ void NeuralNetwork::StartTraininig()
 	double errorRMSTest = TestRun();
 	OutputResults(epoch);
 	RMSResults(epoch, m_error, errorRMSValidation, errorRMSTest);
-
-	for (unsigned i = 0; i < m_Layers.size() - 1; ++i)
-	{
-		Layer &layer = m_Layers[i];
-
-		cout << "Layer : " << i << endl;
-		cout << "Neurons " << layer.size() << endl;
-		
-		for (unsigned j = 0; j < layer.size(); ++j)
-		{
-			cout << "Neuron " << j << endl;
-			
-			vector <double> weights = layer[j].GetWeights();
-			
-
-			for (unsigned k = 0; k < weights.size(); ++k)
-			{
-				cout << weights[k] << "," << endl;
-			}
-		}
-	}
+	_cputs("press any key to continue");
+	_getch();
 }
 
 vector<double> NeuralNetwork::FeedForward(const vector<double> &input)
@@ -396,8 +367,6 @@ void NeuralNetwork::BackPropogation(const vector<double> &expectedOutput)
 			currentLayer[j].UpdateInputWeights(PreviousLayer);
 		}
 	}
-
-
 }
 
 vector<double> NeuralNetwork::Run(const vector<double> &input)
@@ -416,38 +385,39 @@ void NeuralNetwork::OutputResults(int epoch)
 	ofstream out(_config.ResultFileName,std::ofstream::app);
 
 	//write epoh number, alpha, lambda, learningrate
-	out << "Experiment " + to_string(_config.ExperimentNo) + "Epoch - " + to_string(epoch) << "lambda - " + to_string(_config.Lambda) << "alpha - " + to_string(_config.Alpha) << "LearningRate - " + to_string(_config.LearningRate) << endl;
-	//write error RMS
-	out << "RMS - " + to_string(m_error) << endl;
+	
+	std::ostringstream topology;
+	std::copy(_config.Topology.begin(), _config.Topology.end() - 1,
+		std::ostream_iterator<unsigned>(topology, ","));
+ 	topology << _config.Topology.back();
+
+	out << topology.str() <<  endl;
+	out << _config.Lambda << endl;
+	out<<_config.Alpha << endl;
+	out<< _config.LearningRate << endl;
 	//weights and deltaweights
 	//input to output layer
-	for (unsigned i = 0; i < m_Layers.size() - 1; ++i)
+
+
+	for (unsigned i = 0; i < m_Layers.size(); ++i)
 	{
 		Layer &layer = m_Layers[i];
-		/*for (unsigned j = 0; j < m_Layers.size(); ++j)
-		{
-			out << layer[j].GetOutputValue()<< ' ';
-		}
-		out << endl;*/
+		
 		for (unsigned j = 0; j < layer.size(); ++j)
 		{
+			out << layer[j].GetOutputValue()<<endl;
+	
 			vector <double> weights = layer[j].GetWeights();
-			for (unsigned k = 0; k < weights.size(); ++k)
-			{
-				out << weights[k] << ' ';
+
+			std::ostringstream weightsString;
+			if (weights.size() > 0)
+			{ 
+				std::copy(weights.begin(), weights.end() - 1,
+					std::ostream_iterator<double>(weightsString, ","));
+				weightsString << weights.back();
+				out << weightsString.str() << endl;
 			}
-			out << endl;
-		}
-		
-		/*for (unsigned j = 0; j < layer.size(); ++j)
-		{
-			vector <double> deltaWeights= layer[j].GetDeltaWeights();
-			for (unsigned k = 0; k < deltaWeights.size(); ++k)
-			{
-				out << deltaWeights[k] << ' ';
-			}
-			out << endl;
-		}*/
+   		}
 	}
 
 	out.flush();
@@ -467,7 +437,77 @@ void NeuralNetwork::RMSResults(int epoch, double trainingRSM, double validationR
 	cout << trainingRSM << " ,  " << validationRSM << "," << testRSM << endl;
 }
 
+void NeuralNetwork::Initialise()
+{
+	string row;
+	NeuralUtility neuralUtility;
+	FileUtility fileUtility;
+
+	if (_config.InitialisationFile != "")
+	{
+		
+		fileUtility.OpenFile(_config.InitialisationFile, 'r');
+
+		row = fileUtility.GetNextRow();	 //toplogy info
+
+		_config.Topology.clear();
+		_config.Topology = neuralUtility.ConvertStringToVectorUnsigned(row,',');
+		row = fileUtility.GetNextRow();
+
+		 _config.Lambda = stod(row);
+
+		 row = fileUtility.GetNextRow();
+		_config.Alpha = stod(row);
+
+		row = fileUtility.GetNextRow();
+		_config.LearningRate = stod(row);
+	}
+	unsigned noOfLayers = _config.Topology.size();
+	int size = _config.Topology.size();
+
+	for (unsigned i = 0; i < noOfLayers; ++i)
+	{
+		m_Layers.push_back(Layer());
+		unsigned noOfOutputs = (i == size - 1 ? 0 : _config.Topology[i + 1]);
+
+		//create neuron per layer including bias
+		for (unsigned j = 0; j <= _config.Topology[i]; ++j)
+		{
+			if (_config.InitialisationFile != "")
+			{
+				
+				double output = stod(fileUtility.GetNextRow());
+				if (_config.Topology.size() - 1 != i)
+				{
+					row = fileUtility.GetNextRow();
+					vector<double> weights = neuralUtility.ConvertStringToVectorDouble(row, ',');
+					
+					m_Layers.back().push_back(Neuron(noOfOutputs, j, _config, output
+						, weights)); 
+				}
+				else
+				{
+					m_Layers.back().push_back(Neuron(noOfOutputs, j, _config));
+				}
+
+			}
+			else
+			{
+				m_Layers.back().push_back(Neuron(noOfOutputs, j, _config));
+			}
+
+		}
+
+	}
+
+	if (_config.InitialisationFile != "")
+	{
+		fileUtility.CloseFile();
+	}
+}
 NeuralNetwork::~NeuralNetwork()
 {
 	//realase all variables
+
+	
 }

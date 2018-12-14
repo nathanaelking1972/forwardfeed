@@ -1,0 +1,14 @@
+﻿  FeedFowardNN.cpp
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\neuralutility.h(173): warning C4551: function call missing argument list
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(81): warning C4551: function call missing argument list
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(148): warning C4551: function call missing argument list
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(215): warning C4551: function call missing argument list
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(348): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(360): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(465): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\neuralnetwork.h(466): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\feedfowardnn.cpp(69): warning C4551: function call missing argument list
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\feedfowardnn.cpp(78): warning C4101: 'rec': unreferenced local variable
+c:\users\nathanael.king\source\repos\forwardfeed2\neuronetff\feedfowardnn\feedfowardnn\feedfowardnn.cpp(127): warning C4101: 'neuralUtility': unreferenced local variable
+  FeedFowardNN.vcxproj -> C:\Users\nathanael.king\Source\Repos\forwardfeed2\NeuroNetFF\FeedFowardNN\x64\Debug\FeedFowardNN.exe
+  FeedFowardNN.vcxproj -> C:\Users\nathanael.king\Source\Repos\forwardfeed2\NeuroNetFF\FeedFowardNN\x64\Debug\FeedFowardNN.pdb (Full PDB)

@@ -11,10 +11,27 @@ public:
 
 	Neuron(unsigned numberOfOutputs, unsigned id, const NeuralNetworkConfig &config)
 	{
+		
 		for (unsigned connection = 0; connection < numberOfOutputs; ++connection)
 		{
 			m_outputWeights.push_back(Connection());
 			m_outputWeights.back().Weight = RandomWeight();
+		}
+
+		m_id = id;
+		m_outputValue = 1;
+		Eta = config.LearningRate;
+		Alpha = config.Alpha;
+		Lambda = config.Lambda;
+	}
+
+	Neuron(unsigned numberOfOutputs, unsigned id, const NeuralNetworkConfig &config, double NeuronValue, vector<double> &weights)
+	{
+
+		for (unsigned connection = 0; connection < numberOfOutputs; ++connection)
+		{
+			m_outputWeights.push_back(Connection());
+			m_outputWeights.back().Weight = weights[connection];
 		}
 
 		m_id = id;
@@ -28,7 +45,7 @@ public:
 	double GetOutputValue() const { return m_outputValue; }
 	vector<double> GetWeights() const { 
 		vector<double> weights;
-		for (unsigned i = 0; i < m_outputWeights.size() - 1; ++ i)
+		for (unsigned i = 0; i < m_outputWeights.size(); ++ i)
 		{
 			weights.push_back(m_outputWeights[i].Weight);
 		}
@@ -87,8 +104,8 @@ private:
 
 		return sum;
 	}
+	
 };
-
 
 
 void Neuron::FeedForward(const  vector<Neuron>  &previousLayer)

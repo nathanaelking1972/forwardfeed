@@ -2,6 +2,9 @@
 #define _CRT_SECURE_NO_DEPRECATE
 #include <vector>
 #include <stdio.h>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
 
@@ -9,81 +12,71 @@ class FileUtility
 {
 public:
 	void OpenFile(char *fileName, char mode);
-	char * GetNextRow();
+	string GetNextRow();
 	int WriteLine(char *text);
 	bool IsEndOfFile();
 	void CloseFile();
 	~FileUtility()
 	{
-		if (_File != NULL)
-		{
-			CloseFile();
-		}
+		
 	}
 private:
-	FILE *_File;
-	int nbytes = 1024;
-	char *_Line = (char *)malloc(nbytes);
-	char *_Buffer = (char *)malloc(nbytes);
-	size_t _Bytes_read;
-	int _Linesize = 0;
+	ifstream _FileRead;
+	ofstream _FileWrite;
 };
 
 void FileUtility::OpenFile(char* fileName, char mode)
 {
-	errno_t errorNumber;
 	
-	switch (mode)
+	if (mode == 'r')
 	{
-	case 'r':
-		errorNumber = fopen_s(&_File,fileName, "r");
-		break;
-	case 'w':
-		errorNumber = fopen_s(&_File, fileName, "a");
-		break;
-	default:
-		errorNumber = fopen_s(&_File, fileName, "r");
-		break;
+  		 _FileRead.open(fileName);
+	}
+	else if (mode = 'w')
+	{
+		 _FileWrite.open(fileName);
+	}
+	else
+	{
+		throw exception("invalid file operation");
 	}
 
-	if (_File == NULL && errorNumber != 0)
-		printf("Failed to open the file");
+	
 }
 bool FileUtility::IsEndOfFile()
 {
-	return _File == NULL ? true : feof(_File) == 0 ? true : false ;
+	return _FileRead.eof();
 }
 
-char * FileUtility::GetNextRow()
+string FileUtility::GetNextRow()
 {
-	if (_File == NULL)
+	string line;
+	if (_FileRead.eof())
 	{
 		printf("Failed to open the file to read.");
 		return NULL;
 	}
 	
-	if (fgets(_Buffer, sizeof(_Buffer), _File) != NULL)
+	if (!_FileRead.eof() && getline(_FileRead, line, '\n'))
 	{
-		_Buffer[strlen(_Buffer) - 1] = '\0';
-		return _Buffer;
+	
+		return line;
+	}
+	else
+	{
+		return "";
 	}
 
-	printf("Failed to read the file.");
-
-	return  NULL;
 }
 int FileUtility::WriteLine(char *text)
 {
-	if (_File == NULL)
-	{
-		printf("Failed to open the file to write.");
-		return 1;
-	}
-	fputs(text, _File);
+	
+	_FileWrite << text << endl;
 	return 0;
 }
 void  FileUtility::CloseFile()
 {
-	free(_Buffer);
-	free(_Line);
+	_FileRead.close();
+	_FileWrite.close();
+	
 }

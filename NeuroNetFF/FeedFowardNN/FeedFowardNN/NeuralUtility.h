@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -22,6 +23,37 @@ public:
 	void SuffleArrayData(vector<DataRecord> &data);
 	vector<double> MaximumAndMinValue(char *fileName);
 	void FindAndReplace(string & data, string toSearch, string replaceStr);
+	vector<double> ConvertStringToVectorDouble(string& value, char delimiter)
+	{
+		
+		stringstream myStream(value);
+		vector<double> data;
+		string cellData;
+		while (getline(myStream, cellData, ','))
+		{
+			// cellData now has the value of a cell in your csv file.
+			data.push_back(stod(cellData));
+		}
+
+		return data;
+		
+	}
+	vector<unsigned> ConvertStringToVectorUnsigned(string& value, char delimiter)
+	{
+
+		stringstream myStream(value);
+		vector<unsigned> data;
+		string cellData;
+		while (getline(myStream, cellData, ','))
+		{
+			// cellData now has the value of a cell in your csv file.
+			cout << cellData;
+			data.push_back(stoi(cellData));
+		}
+
+		return data;
+
+	}
 
 	/*int WriteLine(char *text);*/
 	int GenerateRandoms(int lower, int upper);

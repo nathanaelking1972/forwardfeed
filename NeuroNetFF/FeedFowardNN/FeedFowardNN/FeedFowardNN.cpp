@@ -10,125 +10,118 @@ int main(int argc, char **argv)
 {
 	// --ROBOT INITIALIZATION--
 	// Create Instances
-	//Aria::init();
+	Aria::init();
 
-	//// Parse Command Line Arguments
-	//ArArgumentParser argParser(&argc, argv);
-	//argParser.loadDefaultArguments();
+	// Parse Command Line Arguments
+	ArArgumentParser argParser(&argc, argv);
+	argParser.loadDefaultArguments();
 
-	//ArRobot robot;
-	//ArPose  pose;
+	ArRobot robot;
+	ArPose  pose;
 
-	//// Add Sonars
-	//ArSensorReading *sonarSensor[8];
+	// Add Sonars
+	ArSensorReading *sonarSensor[8];
 
-	//int sonarRange[8];
+	int sonarRange[8];
 
-	//ArRobotConnector robotConnector(&argParser, &robot);
+	ArRobotConnector robotConnector(&argParser, &robot);
 
-	//if (robotConnector.connectRobot())
-	//	printf("Robot Connected!\n");
+	if (robotConnector.connectRobot())
+		printf("Robot Connected!\n");
 
-	//robot.runAsync(false);
-	//robot.lock(); // Stops the robot from performing actions.
-	//robot.enableMotors();
-	//robot.unlock(); // All the actions buffered since the robot.lock() instruction will be executed.
+	robot.runAsync(false);
+	robot.lock(); // Stops the robot from performing actions.
+	robot.enableMotors();
+	robot.unlock(); // All the actions buffered since the robot.lock() instruction will be executed.
 
-	//				// --END ROBOT INITIALIZATION--
+					// --END ROBOT INITIALIZATION--
 
-	//				// Neural Network Initialization
-	//NeuralNetwork neural_network(2, 1, 4, 2);
-	//neural_network.initializeWeights("Weights\\FirstTest");
-
-	//vector<double> sensors;
-	//vector<double> vel;
-
-	//while (true)
-	//{
-	//	// Sensor Readings
-	//	for (int i = 0; i < 8; i++)
-	//	{
-	//		sonarSensor[i] = robot.getSonarReading(i);
-	//		sonarRange[i] = sonarSensor[i]->getRange();
-	//	}
-	//	sensors.clear();
-
-	//	sensors.push_back(sonarRange[0] / 6000.0);
-	//	sensors.push_back(sonarRange[1] / 6000.0);
-
-	//	vel = neural_network.calcHypothesis(sensors);
-
-	//	printf("Inputs: %f\t-%f\n", sensors[0] * 6000, sensors[1] * 6000);
-	//	printf("Outputs: %f\t-%f\n", vel[0] * 300, vel[1] * 300);
-
-	//	robot.setVel2(vel[0] * 300, vel[1] * 300);
-
-	//	ArUtil::sleep(100);
-	//}
-
-	//neural_network.deleteNetwork();
-
-	//robot.lock();
-	//robot.stop();
-	//robot.unlock();
-
-	//Aria::exit();
-
-	//*******************Training*********************
-
-	//Setup the network
-	
+	 //initialize and run
 	NeuralNetworkConfig config;
-	NeuralUtility neuralUtility;
-	unsigned totalExperiments = 100;
+	config.InitialisationFile = "c:\\data\\initialisation.csv";
+	NeuralNetwork net(config);
+
+	vector<double> input;
+	vector<double> result;
+
+	while (true)
+	{
+		// Sensor Readings
+		for (int i = 0; i < 8; i++)
+		{
+			sonarSensor[i] = robot.getSonarReading(i);
+			sonarRange[i] = sonarSensor[i]->getRange();
+		}
+		input.clear();
+
+		input.push_back(sonarRange[0] / 6000.0);
+		input.push_back(sonarRange[1] / 6000.0);
+
+	
+		result = net.Run(input);
+		
+	   
+		printf("Inputs: %f\t-%f\n", input[0] * 6000, input[1] * 6000);
+		printf("Outputs: %f\t-%f\n", result[0] * 300, result[1] * 300);
+
+		robot.setVel2(result[0] * 300, result[1] * 300);
+
+		ArUtil::sleep(100);
+	}
+
 	
 
-	vector<string> m_Constants;
-	
-	unsigned i = 1;
-	
-	
+	robot.lock();
+	robot.stop();
+	robot.unlock();
 
-		//double alpha = neuralUtility.GenerateRandoms(0, 1);
-		//double lambda = neuralUtility.GenerateRandoms(0, 1);
-		//double learningRate = neuralUtility.GenerateRandoms(0, 1);
-
-		//string str = to_string(alpha) + ',' + to_string(lambda) + ',' + to_string(learningRate);
-		////elements exist
-		//if (std::find(m_Constants.begin(), m_Constants.end(), str) != m_Constants.end())
-		//{
-		//	continue;
-		//}
-	
-		i++;
-	
-		config.ExperimentNo = 1;
-		config.TrainingDataFileName = "M:\\CE889\\Program\\Data\\training_data.csv";
-		config.TempFileName = "M:\\CE889\\Program\\Data\\training_data_temp.csv";
-		config.ValidationDataFileName = "M:\\CE889\\Program\\Data\\Validation_data.csv";
-		config.ResultFileName = "M:\\CE889\\Program\\Results\\ResultFileName_exp.csv";
-		config.RMSFileName = "M:\\CE889\\Program\\Results\\RMSFileName_exp.csv";
-		config.TestDataFileName = "M:\\CE889\\Program\\Data\\test_data.csv";
-		config.TotalEpoch = 1000; 
-		config.Alpha = 0.040;
-		config.Lambda = 1.0;
-		config.LearningRate = 0.20;
-		config.Topology.push_back(2); //input layer with two neurons
-		config.Topology.push_back(4); // hidden layer with 4 neurons
-		config.Topology.push_back(2); // output layer with 2 neurons
-
-		NeuralNetwork net(config);
-		//initialize the network weights
-		//load the input/output file
-		//Train the network
-		net.StartTraininig();
-	
-		//Write the output/errors
-	
-	//*****************Validate******************
-
+	Aria::exit();
 
 
 	return 0;
 }
 
+void Train()
+{
+	NeuralNetworkConfig config;
+	NeuralUtility neuralUtility;
+	unsigned totalExperiments = 100;
+
+
+	vector<string> m_Constants;
+
+	unsigned i = 1;
+
+	i++;
+
+	config.ExperimentNo = 1;
+	//config.TrainingDataFileName = "M:\\CE889\\Program\\Data\\training_data.csv";
+	config.TrainingDataFileName = "c:\\Data\\training_data.csv";
+	//config.TempFileName = "M:\\CE889\\Program\\Data\\training_data_temp.csv";
+	config.TempFileName = "c:\\Data\\training_data_temp.csv";
+	//config.ValidationDataFileName = "M:\\CE889\\Program\\Data\\Validation_data.csv";
+	config.ValidationDataFileName = "c:\\Data\\Validation_data.csv";
+	config.ResultFileName = "c:\\Results\\ResultFileName_exp.csv";
+	//config.ResultFileName = "M:\\CE889\\Program\\Results\\ResultFileName_exp.csv";
+	config.RMSFileName = "c:\\Results\\RMSFileName_exp.csv";
+	//config.RMSFileName = "M:\\CE889\\Program\\Results\\RMSFileName_exp.csv";
+	config.TestDataFileName = "c:\\Data\\test_data.csv";
+	//config.TestDataFileName = "M:\\CE889\\Program\\Data\\test_data.csv";
+	config.TotalEpoch = 1000;
+	config.Alpha = 0.040;
+	config.Lambda = 1.0;
+	config.LearningRate = 0.20;
+	config.Topology.push_back(2); //input layer with two neurons
+	config.Topology.push_back(4); // hidden layer with 4 neurons
+	config.Topology.push_back(2); // output layer with 2 neurons
+
+	NeuralNetwork net(config);
+	//initialize the network weights
+	//load the input/output file
+	//Train the network
+	net.StartTraininig();
+
+	//Write the output/errors
+
+	//*****************Validate******************
+}
